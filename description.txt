@@ -1,0 +1,39 @@
+Function seal:
+Declaration:
+
+bool seal(const char * inFile, const char * outFile, const char * publicKeyFile, const char * symmetricCipher)
+Description:
+The function accepts four parameters, the first three parameters define the names of files. In the file inFile, you will find binary data intended for encryption, outFile is the output file where you save all the necessary data for decryption, and publicKeyFile is the public key that will be used to encrypt the symmetric key. The parameter symmetricCipher is the name of the symmetric cipher.
+
+The function generates a symmetric (shared) key and an initialization vector (IV), which will be the input to the symmetric cipher symmetricCipher. You will encrypt the data in inFile with this cipher, key, and IV. Also, you encrypt the symmetric key with an asymmetric cipher (RSA) using the public key stored in publicKeyFile.
+
+OpenSSL does most of the work for you:
+
+PEM_read_PUBKEY reads the public key,
+EVP_SealInit generates a shared key and IV (if necessary), encrypts the shared key, and sets the context,
+EVP_SealUpdate and EVP_SealFinal work the same as in previous tasks.
+Hybrid encryption is able to encrypt for multiple recipients. The data is encrypted only once with a shared key and IV, but the shared key can be encrypted with multiple public keys. Therefore, the function accepts an array of public keys.
+
+
+Expected function behavior:
+
+Returns true in case of success, false otherwise.
+In case the function returns false, the output file will not exist.
+Function open:
+Declaration:
+
+bool open(const char * inFile, const char * outFile, const char * privateKeyFile )
+Description:
+In the file inFile, you will find an encrypted file in the same format as the output file from the seal function. Write the decrypted data to the output file outFile - binary identity with the input file to the seal function is expected. This time, the private key for decrypting the encrypted key can be found in privateKeyFile. The functions PEM_read_PrivateKey, EVP_OpenInit, EVP_OpenUpdate, and EVP_OpenFinal will play a key role in this function.
+
+Sample data contents
+PublicKey.pem - public key (try to open it as a txt file),
+PrivateKey.pem - private key,
+sample.cpp - file with declarations and a basic test,
+sealed_sample.bin - encrypted file. You can use it to test decryption. It was encrypted using the attached private key. After decryption, you will find ASCII text in it. If you encrypt the same data, the file will not be the same as sealed_sample.bin - a different key and IV were used.
+Final advice
+There are many places in this task where functions may return an error. Check and consider automatically releasing resources using unique_ptr (applies to context, key, allocated arrays, and file closing).
+The length of the encrypted key depends on the public key. You cannot count on a fixed length.
+When compiling, do not forget to link the OpenSSL crypto library using -lcrypto.
+The OpenSSL version on progtest is 1.1.1n.
+All "notes" from the previous task apply.
